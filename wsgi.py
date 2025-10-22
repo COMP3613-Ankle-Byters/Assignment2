@@ -3,7 +3,11 @@ from flask.cli import AppGroup
 from App.main import create_app
 from App.database import db, get_migrate
 
-#controllers
+from App.models.user import User
+from App.models.student import Student
+from App.models.staff import Staff
+from App.models.hours_completed import HoursCompleted
+from App.models.accolade import Accolade
 from App.controllers.student import create_student, request_hours, view_profile
 from App.controllers.staff import create_staff, review_hours, delete_student
 from App.controllers.leaderboard import get_leaderboard
