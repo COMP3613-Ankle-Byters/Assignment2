@@ -7,8 +7,6 @@ class Student(db.Model):
     last_name = db.Column(db.String(50), nullable=False)
     password = db.Column(db.String(256), nullable=False)
 
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
-
     hours_completed = db.relationship('HoursCompleted', backref='student', lazy=True)
     accolade = db.relationship('Accolade', backref='student', lazy=True)
 

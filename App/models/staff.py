@@ -7,8 +7,6 @@ class Staff(db.Model):
     last_name = db.Column(db.String(50), nullable=False)
     password = db.Column(db.String(256), nullable=False)
 
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
-
     def __init__(self, first_name, last_name, password):
         self.first_name = first_name
         self.last_name = last_name

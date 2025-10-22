@@ -8,7 +8,7 @@ auth_views = Blueprint('auth_views', __name__, template_folder='../templates')
 @auth_views.route('/login', methods=['POST'])
 def login_action():
     data = request.form
-    token = login(data['username'], data['password'])
+    token = login(data['first_name'], data['last_name'], data['password'])
     response = redirect(request.referrer)
     if not token:
         flash('Bad username or password', 'error')
@@ -37,9 +37,9 @@ def identify_page():
 @auth_views.route('/api/login', methods=['POST'])
 def login_api():
     data = request.json
-    token = login(data['username'], data['password'])
+    token = login(data['first_name'], data['last_name'], data['password'])
     if not token:
-        return jsonify({'message': 'Bad username or password'}), 401
+        return jsonify({'message': 'Bad name or password'}), 401
     response = jsonify(access_token=token)
     set_access_cookies(response, token)
     return response
@@ -54,6 +54,6 @@ def logout_api():
 @jwt_required()
 def identify_user_api():
     return jsonify({
-        'username': current_user.username,
+        'name': current_user.first_name + current_user.last_name,
         'id': current_user.id
     })

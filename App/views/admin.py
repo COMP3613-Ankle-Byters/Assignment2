@@ -2,7 +2,6 @@ from flask_admin.contrib.sqla import ModelView
 from flask_admin import Admin
 from flask import redirect, url_for, request, flash
 from flask_jwt_extended import current_user, jwt_required
-from App.models import User
 from App.database import db
 
 class AdminView(ModelView):
