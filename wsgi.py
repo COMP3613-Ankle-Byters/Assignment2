@@ -1,4 +1,6 @@
 import click
+import sys
+import pytest
 from flask.cli import AppGroup
 from App.main import create_app
 from App.database import db, get_migrate
@@ -239,3 +241,18 @@ def leaderboard():
     for entry in lb:
         print(f"{entry['rank']}. {entry['name']} [{entry['accolade']}] - {entry['total_hours']} hours")
     print()
+
+test = AppGroup('test', help='Testing commands') 
+
+@test.command("user", help="Run User tests")
+@click.argument("type", default="all")
+def user_tests_command(type):
+    if type == "unit":
+        sys.exit(pytest.main(["-k", "UnitTests"]))
+    elif type == "int":
+        sys.exit(pytest.main(["-k", "IntegrationTests"]))
+    else:
+        sys.exit(pytest.main(["-k", "App"]))
+    
+
+app.cli.add_command(test)
