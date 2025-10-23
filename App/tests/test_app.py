@@ -1,7 +1,7 @@
 import pytest
 from App.models import Student , Staff, HoursCompleted, Accolade
 from App.database import db, create_db
-from App.controllers import view_profile, get_leaderboard
+from App.controllers import view_profile, get_leaderboard, review_hours
 from App.main import create_app
 from App.controllers.staff import delete_student
 from datetime import datetime
@@ -140,3 +140,28 @@ def test_get_leaderboard(empty_db):
         assert leaderboard[1]["accolade"] in ["Silver", "None", "Bronze", "Gold"]
         assert leaderboard[0]["rank"] == 1
         assert leaderboard[1]["rank"] == 2
+
+def test_review_hours(empty_db):
+    with empty_db.application.app_context():
+        test_staff_member = Staff(first_name="Admin", last_name="User", password="admin123")
+        db.session.add(test_staff_member)
+        db.session.commit()
+
+        test_student = Student(first_name="Test", last_name="Student", password="testpass")
+        db.session.add(test_student)
+        db.session.commit()
+
+        hours_request = HoursCompleted(student_id=test_student.id, hours=8, activity="Library Help", status="pending")
+        db.session.add(hours_request)
+        db.session.commit()
+
+        reviewed_record = review_hours(
+            staff_id=test_staff_member.id,
+            password="admin123",
+            student_id=test_student.id,
+            request_index=0,
+            action="c"
+        )
+
+        assert reviewed_record is not None
+        assert reviewed_record.staff_id == test_staff_member.id
