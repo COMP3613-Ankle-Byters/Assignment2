@@ -3,7 +3,7 @@ from App.controllers.staff import create_staff, review_hours, delete_student
 
 staff_views = Blueprint('staff_views', __name__, template_folder='../templates')
 
-# API routes
+#api routes
 @staff_views.route('/api/staff/create', methods=['POST'])
 def create_staff_api():
     data = request.json
@@ -13,15 +13,12 @@ def create_staff_api():
 @staff_views.route('/api/staff/<int:staff_id>/review_hours', methods=['POST'])
 def review_hours_api(staff_id):
     data = request.json
-    record = review_hours(
-        staff_id,
-        data['student_id'],
-        data['request_index'],
-        confirm=data.get('confirm', True)
-    )
+    if data.get('password') is None or data.get('student_id') is None or data.get('request_index') is None or data.get('action') is None:
+        return jsonify({'message': 'Missing required fields'}), 400
+    record = review_hours(staff_id, data['password'], data['student_id'], data['request_index'], data['action'])
     if not record:
         return jsonify({'message': 'Invalid request'}), 404
-    return jsonify({'message': f"{record.status} hours for request ID {record.id}"}), 200
+    return jsonify({'message': f"{record.status} hours for request index {data['request_index']}"}), 200
 
 @staff_views.route('/api/staff/<int:staff_id>/delete_student', methods=['DELETE'])
 def delete_student_api(staff_id):
