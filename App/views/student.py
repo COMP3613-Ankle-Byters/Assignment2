@@ -7,19 +7,9 @@ student_views = Blueprint('student_views', __name__, template_folder='../templat
 
 # API routes
 @student_views.route('/api/student/create', methods=['POST'])
-@jwt_required()
+
 def create_student_api():
-    identity = get_jwt_identity()
-    claims = get_jwt()
-    try:
-        token_user_id = int(identity)
-    except (TypeError, ValueError):
-        return jsonify({'message': 'Invalid token identity'}), 401
-
     
-    if claims.get('type') != 'student':
-        return jsonify({'message': 'Unauthorized access'}), 403
-
     data = request.json
     student = create_student(data['first_name'], data['last_name'], data['password'])
     return jsonify({'id': student.id, 'name': f"{student.first_name} {student.last_name}"}), 201
