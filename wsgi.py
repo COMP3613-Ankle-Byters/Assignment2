@@ -10,7 +10,8 @@ from App.controllers.student import create_student, request_hours, view_profile
 from App.controllers.staff import create_staff, review_hours, delete_student
 from App.controllers.leaderboard import get_leaderboard
 from App.models import Student, Staff, HoursCompleted, Accolade
-
+import pytest
+import sys
 app = create_app()
 migrate = get_migrate(app)
 
@@ -35,21 +36,22 @@ def init():
 
 
     sample_hours = [
-        (st1.id, 14, "Beach Cleanup"),
-        (st1.id, 12, "Tree Planting"),
-        (st1.id, 11, "Community Tutoring"),
-        (st1.id, 8, "Library Assistance"),
-        (st1.id, 7, "Food Drive"),
-        (st2.id, 8, "Tree Planting"),
-        (st2.id, 10, "Food Drive"),
-        (st2.id, 8, "Library Assistance"),
-        (st3.id, 5, "Food Drive"),
-        (st3.id, 6, "Library Assistance"),
-        (st4.id, 2, "Tutoring")
+        (st1.id, 14, "Beach Cleanup", "confirmed"),
+        (st1.id, 12, "Tree Planting", "confirmed"),
+        (st1.id, 11, "Community Tutoring", "confirmed"),
+        (st1.id, 8, "Library Assistance", "confirmed"),
+        (st1.id, 7, "Food Drive", "confirmed"),
+        (st2.id, 8, "Tree Planting", "confirmed"),
+        (st2.id, 10, "Food Drive", "confirmed"),
+        (st2.id, 8, "Library Assistance", "confirmed"),
+        (st3.id, 5, "Food Drive", "confirmed"),
+        (st3.id, 6, "Library Assistance", "confirmed"),
+        (st4.id, 2, "Tutoring", "confirmed"),
+        (st1.id, 3, "Community Service", "pending")  #unconfirmed hours for testing 
     ]
 
-    for sid, hrs, act in sample_hours:
-        record = HoursCompleted(student_id=sid, hours=hrs, activity=act, status="confirmed")
+    for sid, hrs, act, status in sample_hours:
+        record = HoursCompleted(student_id=sid, hours=hrs, activity=act, status=status)
         db.session.add(record)
 
     db.session.commit()
@@ -83,6 +85,23 @@ def list_staff_cli():
 
     print("\n_________________________________")
 
+# ================================
+# Testing CLI
+# ================================
+
+test_cli = AppGroup("test", help="Testing commands")
+
+@test_cli.command("all", help="Run unit or integration tests")
+@click.argument("type", default="all")
+def user_test_command(type):
+    if type == "unit":
+        sys.exit(pytest.main(["-m", "unit"]))
+    elif type == "integration":
+        sys.exit(pytest.main(["-m", "integration"]))
+    else:
+        sys.exit(pytest.main(["App/tests/"])) 
+
+app.cli.add_command(test_cli)
 
 
 # ================================
@@ -164,47 +183,7 @@ def staff_create():
 def review_hours_cli():
     staff_id = int(input("Enter staff ID: "))
     password = input("Enter your password: ")
-
-    staff = Staff.query.get(staff_id)
-    if not staff or not staff.check_password(password):
-        print("Invalid staff credentials.")
-        return
-
-    student_id = int(input("Enter student ID to review: "))
-    student = Student.query.get(student_id)
-    if not student:
-        print("Invalid student ID.")
-        return
-
-    pending = HoursCompleted.query.filter_by(student_id=student.id, status="pending").all()
-    if not pending:
-        print(f"No pending requests for {student.first_name} {student.last_name}.")
-        return
-
-    print(f"\nPending requests for {student.first_name} {student.last_name}:")
-    for record in pending:
-        print(f"[Request ID: {record.id}] {record.hours}h - {record.activity}")
-
-    hour_request_id = int(input("Enter the Hour Request ID to review: "))
-    record = HoursCompleted.query.filter_by(id=hour_request_id, student_id=student.id, status="pending").first()
-
-    if not record:
-        print("Invalid Hour Request ID.")
-        return
-
-    action = input("Do you want to confirm or deny? (c/d): ").lower()
-    if action == "c":
-        record.status = "confirmed"
-        record.staff_id = staff.id
-        db.session.commit()
-        print(f"Confirmed {record.hours}h - {record.activity} for {student.first_name} {student.last_name}.")
-    elif action == "d":
-        record.status = "denied"
-        record.staff_id = staff.id
-        db.session.commit()
-        print(f"Denied {record.hours}h - {record.activity} for {student.first_name} {student.last_name}.")
-    else:
-        print("Invalid action. Please enter 'c' or 'd'.")
+    review_hours(staff_id, password)
 
 
 @staff_cli.command("delete_student", help="Delete a student")
@@ -239,3 +218,6 @@ def leaderboard():
     for entry in lb:
         print(f"{entry['rank']}. {entry['name']} [{entry['accolade']}] - {entry['total_hours']} hours")
     print()
+
+
+
