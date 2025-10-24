@@ -12,10 +12,10 @@ def login(first_name, last_name, password):
     if not user or not user.check_password(password):
         return None
 
-    token = create_access_token(identity={
-        "id": user.id,
-        "type": "student" if isinstance(user, Student) else "staff"
-    })
+    token = create_access_token(
+    identity=str(user.id),
+    additional_claims={"type": "student" if isinstance(user, Student) else "staff"}
+    )
     return token
 
 

@@ -27,7 +27,7 @@ def create_student_api():
 @student_views.route('/api/student/<int:student_id>/request_hours', methods=['POST'])
 @jwt_required()
 def student_request_hours_api(student_id):
- 
+    # Auth checks
     identity = get_jwt_identity()
     claims = get_jwt()
     try:
@@ -38,13 +38,14 @@ def student_request_hours_api(student_id):
     if token_user_id != student_id or claims.get('type') != 'student':
         return jsonify({'message': 'Unauthorized access'}), 403
 
-
+    # Payload validation
     data = request.get_json()
     hours = data.get('hours')
     activity = data.get('activity')
     if hours is None or activity is None:
         return jsonify({'message': 'Missing hours or activity'}), 400
 
+    # Create request
     record = request_hours(student_id, hours, activity)
     if not record:
         return jsonify({'message': 'Invalid student ID or could not create record'}), 404
@@ -66,11 +67,11 @@ def view_student_profile_web(student_id):
         return jsonify({'message': 'Invalid token identity'}), 401
         
 
-  
+    # Check owner + role
     if token_user_id != student_id or claims.get('type') != 'student':
         return jsonify({'message': 'Unauthorized access'}), 403
 
-    profile = view_profile(student_id)  
+    profile = view_profile(student_id)   # note: view_profile() should not require password here
     if not profile:
         return jsonify({'message': 'Profile not found'}), 404
     return jsonify(profile)

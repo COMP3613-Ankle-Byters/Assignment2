@@ -18,17 +18,17 @@ def create_staff_api():
 @jwt_required()
 def review_hours_api(staff_id):
 
-    
+    # ensure user is a staff member and is acting as that staff
     claims = get_jwt()
     if claims.get('type') != 'staff':
         return jsonify({'message': 'Only staff can access this endpoint'}), 403
 
-    data = request.json or {}
-    required = ('password', 'student_id', 'request_index', 'action')
+    data = request.json 
+    required = ('student_id', 'request_index', 'action')
     if not all(k in data for k in required):
         return jsonify({'message': 'Missing required fields'}), 400
 
-    record = review_hours(staff_id, data['password'], data['student_id'], data['request_index'], data['action'])
+    record = review_hours(staff_id, data['student_id'], data['request_index'], data['action'])
     if not record:
         return jsonify({'message': 'Invalid request'}), 404
     return jsonify({'message': f"{record.status} hours for request index {data['request_index']}"}), 200
@@ -41,6 +41,7 @@ def delete_student_api(staff_id):
         return jsonify({'message': 'Only staff can access this endpoint'}), 403
 
     student_id = request.json.get('student_id')
+
     student = delete_student(staff_id, student_id)
     if not student:
         return jsonify({'message': 'Invalid staff or student ID'}), 404
