@@ -20,9 +20,9 @@ def request_hours(student_id, hours, activity):
     db.session.commit()
     return record
 
-def view_profile(student_id, password):
+def view_profile(student_id):
     student = Student.query.get(student_id)
-    if not student or not student.check_password(password):
+    if not student:
         return None
 
     pending = [(h.activity, h.hours) for h in HoursCompleted.query.filter_by(student_id=student.id, status="pending")]
