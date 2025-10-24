@@ -18,7 +18,7 @@ def create_staff_api():
 @jwt_required()
 def review_hours_api(staff_id):
 
-
+    
     claims = get_jwt()
     if claims.get('type') != 'staff':
         return jsonify({'message': 'Only staff can access this endpoint'}), 403

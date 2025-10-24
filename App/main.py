@@ -31,13 +31,46 @@ def create_app(overrides={}):
     # Database initialization
     init_db(app)
 
-    # Initialize JWT
+   
     jwt.init_app(app)
+    
+    @jwt.user_lookup_loader
+    def user_lookup_callback(_jwt_header, jwt_data):
+        identity = jwt_data.get("sub")
+        
+        if isinstance(identity, dict):
+            user_id = identity.get("id")
+            user_type = (identity.get("type") or identity.get("role"))
+        else:
+            try:
+                user_id = int(identity) if identity is not None else None
+            except (TypeError, ValueError):
+                user_id = None
+            user_type = None
 
-    # Register blueprints
+        if user_id is None:
+            return None
+
+        from App.models.student import Student
+        from App.models.staff import Staff
+
+       
+        if user_type:
+            t = user_type.lower()
+            if t in ("student", "s"):
+                return Student.query.get(user_id)
+            if t in ("staff", "dstaff", "d_staff", "tutor", "teacher"):
+                return Staff.query.get(user_id)
+
+        
+        user = Student.query.get(user_id)
+        if user:
+            return user
+        return Staff.query.get(user_id)
+
     add_views(app)
 
-    # Optional: push app context
+    
     app.app_context().push()
 
     return app
