@@ -62,7 +62,7 @@ def test_view_profile(empty_db):
         db.session.add_all([pending_hours, confirmed_hours])
         db.session.commit()
         
-        test_profile = view_profile(test_student.id, "bigpass")
+        test_profile = view_profile(test_student.id)
         
         assert test_profile["first_name"] == "Big"
         assert test_profile["last_name"] == "Guy"
@@ -88,7 +88,7 @@ def test_award_accolade(empty_db):
         db.session.add_all(hours_list)
         db.session.commit()
         
-        test_profile = view_profile(test_student.id, "hobopass")
+        test_profile = view_profile(test_student.id)
         
         if test_profile["total_hours"] >= 50:
             assert test_profile["accolade"] == "Gold"
