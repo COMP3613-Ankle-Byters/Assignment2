@@ -10,6 +10,7 @@ from datetime import datetime
    Unit Tests
 '''
 
+@pytest.mark.unit
 def test_create_student():
     new_student = Student(first_name="Annita", last_name="Pea", password="password123")
     assert new_student.first_name == "Annita"
@@ -17,6 +18,7 @@ def test_create_student():
     assert new_student.password != "password123"
     assert new_student.id == None  # empty before being added to the database
 
+@pytest.mark.unit
 def test_create_staff():
     new_staff = Staff(first_name="Ben", last_name="Dover", password="adminpass")
     assert new_staff.first_name == "Ben"
@@ -24,6 +26,7 @@ def test_create_staff():
     assert new_staff.password != "adminpass"
     assert new_staff.id == None  # empty before being added to the database
 
+@pytest.mark.unit
 def test_request_hours():
     hours_record = HoursCompleted(student_id=1, hours=5, activity="Volunteering", status="pending")
     assert hours_record.student_id == 1
@@ -47,6 +50,7 @@ def empty_db():
     yield app.test_client()
     db.drop_all()
 
+@pytest.mark.integration
 def test_view_profile(empty_db):
     with empty_db.application.app_context():
         test_student = Student(first_name="Big", last_name="Guy", password="bigpass")
@@ -69,6 +73,7 @@ def test_view_profile(empty_db):
         assert test_profile["date_awarded"] == "N/A" or isinstance(test_profile["date_awarded"], str)
         assert test_profile["rank"] == 1 
 
+@pytest.mark.integration
 def test_award_accolade(empty_db):
     with empty_db.application.app_context():
         test_student = Student(first_name="Hoo", last_name="Bo", password="hobopass")
@@ -94,7 +99,7 @@ def test_award_accolade(empty_db):
             
         assert test_profile["date_awarded"] != "N/A"
 
-
+@pytest.mark.integration
 def test_delete_student(empty_db):
     with empty_db.application.app_context():
         new_staff = Staff(first_name="Smol", last_name="Feet", password="staffpass")
@@ -110,6 +115,7 @@ def test_delete_student(empty_db):
         assert deleted_student.id == new_student.id
         assert Student.query.get(new_student.id) is None
 
+@pytest.mark.integration
 def test_get_leaderboard(empty_db):
     with empty_db.application.app_context():
         tom = Student(first_name="Tom", last_name="Cat", password="tompass")
@@ -141,6 +147,7 @@ def test_get_leaderboard(empty_db):
         assert leaderboard[0]["rank"] == 1
         assert leaderboard[1]["rank"] == 2
 
+@pytest.mark.integration
 def test_review_hours(empty_db):
     with empty_db.application.app_context():
         test_staff_member = Staff(first_name="Who", last_name="Where", password="admin123")

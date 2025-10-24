@@ -10,7 +10,8 @@ from App.controllers.student import create_student, request_hours, view_profile
 from App.controllers.staff import create_staff, review_hours, delete_student
 from App.controllers.leaderboard import get_leaderboard
 from App.models import Student, Staff, HoursCompleted, Accolade
-
+import pytest
+import sys
 app = create_app()
 migrate = get_migrate(app)
 
@@ -84,6 +85,23 @@ def list_staff_cli():
 
     print("\n_________________________________")
 
+# ================================
+# Testing CLI
+# ================================
+
+test_cli = AppGroup("test", help="Testing commands")
+
+@test_cli.command("all", help="Run unit or integration tests")
+@click.argument("type", default="all")
+def user_test_command(type):
+    if type == "unit":
+        sys.exit(pytest.main(["-m", "unit"]))
+    elif type == "integration":
+        sys.exit(pytest.main(["-m", "integration"]))
+    else:
+        sys.exit(pytest.main(["App/tests/"])) 
+
+app.cli.add_command(test_cli)
 
 
 # ================================
@@ -200,3 +218,6 @@ def leaderboard():
     for entry in lb:
         print(f"{entry['rank']}. {entry['name']} [{entry['accolade']}] - {entry['total_hours']} hours")
     print()
+
+
+
