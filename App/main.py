@@ -33,6 +33,41 @@ def create_app(overrides={}):
 
     # Initialize JWT
     jwt.init_app(app)
+    # Initialize JWT
+    @jwt.user_lookup_loader
+    def user_lookup_callback(_jwt_header, jwt_data):
+        identity = jwt_data.get("sub")
+        # extract id and optional type/role from sub
+        if isinstance(identity, dict):
+            user_id = identity.get("id")
+            user_type = (identity.get("type") or identity.get("role"))
+        else:
+            try:
+                user_id = int(identity) if identity is not None else None
+            except (TypeError, ValueError):
+                user_id = None
+            user_type = None
+
+        if user_id is None:
+            return None
+
+        # lazy import of your models
+        from App.models.student import Student
+        from App.models.staff import Staff
+
+        # if token indicates type, use it
+        if user_type:
+            t = user_type.lower()
+            if t in ("student", "s"):
+                return Student.query.get(user_id)
+            if t in ("staff", "dstaff", "d_staff", "tutor", "teacher"):
+                return Staff.query.get(user_id)
+
+       
+        user = Student.query.get(user_id)
+        if user:
+            return user
+        return Staff.query.get(user_id)
 
     # Register blueprints
     add_views(app)
