@@ -10,8 +10,34 @@ def create_staff(first_name, last_name, password):
     db.session.commit()
     return staff
 
-def review_hours(staff_id, student_id, request_index, confirm=True):
+def review_hours(staff_id, password, student_id, request_index, confirm=True):
     staff = Staff.query.get(staff_id)
+    if not staff or not staff.check_password(password):
+        print("Invalid staff credentials.")
+        return None
+
+
+    if student_id is None:
+        student_id = int(input("Enter student ID to review: "))
+    if request_index is None or action is None:
+        student = Student.query.get(student_id)
+        if not student:
+            print("Invalid student ID.")
+            return None
+        pending = HoursCompleted.query.filter_by(student_id=student.id, status="pending").all()
+        if not pending:
+            print(f"No pending requests for {student.first_name} {student.last_name}.")
+            return None
+        print(f"\nPending requests for {student.first_name} {student.last_name}:")
+        for i, record in enumerate(pending):
+            print(f"[Index: {i}] {record.hours}h - {record.activity}")
+        if request_index is None:
+            request_index = int(input("Enter the request index to review: "))
+        if action is None:
+            action = input("Do you want to confirm or deny? (c/d): ").lower()
+
+    
+    
     student = Student.query.get(student_id)
     if not staff or not student:
         return None
@@ -21,9 +47,20 @@ def review_hours(staff_id, student_id, request_index, confirm=True):
         return None
 
     record = pending[request_index]
-    record.status = "confirmed" if confirm else "denied"
-    record.staff_id = staff.id
-    db.session.commit()
+    if action == "c":
+        record.status = "confirmed"
+        record.staff_id = staff.id
+        db.session.commit()
+        print(f"Confirmed {record.hours}h - {record.activity} for {student.first_name} {student.last_name}.")
+    elif action == "d":
+        record.status = "denied"
+        record.staff_id = staff.id
+        db.session.commit()
+        print(f"Denied {record.hours}h - {record.activity} for {student.first_name} {student.last_name}.")
+    else:
+        print("Invalid action. Please enter 'c' or 'd'.")
+        return None
+    
     return record
 
 def delete_student(staff_id, student_id):

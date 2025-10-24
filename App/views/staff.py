@@ -1,5 +1,6 @@
 from flask import Blueprint, request, jsonify
 from App.controllers.staff import create_staff, review_hours, delete_student
+from flask_jwt_extended import jwt_required, get_jwt
 
 staff_views = Blueprint('staff_views', __name__, template_folder='../templates')
 
@@ -12,13 +13,18 @@ def create_staff_api():
 
 @staff_views.route('/api/staff/<int:staff_id>/review_hours', methods=['POST'])
 def review_hours_api(staff_id):
+
+    
+    claims = get_jwt()
+    if claims.get('type') != 'staff':
+        return jsonify({'message': 'Only staff can access this endpoint'}), 403
+
     data = request.json
-    record = review_hours(
-        staff_id,
-        data['student_id'],
-        data['request_index'],
-        confirm=data.get('confirm', True)
-    )
+    required = ('password', 'student_id', 'request_index', 'action')
+    if not all(k in data for k in required):
+        return jsonify({'message': 'Missing required fields'}), 400
+    
+    record = review_hours(staff_id, data['password'], data['student_id'], data['request_index'], data['action'])
     if not record:
         return jsonify({'message': 'Invalid request'}), 404
     return jsonify({'message': f"{record.status} hours for request ID {record.id}"}), 200
