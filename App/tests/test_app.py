@@ -125,9 +125,9 @@ def test_get_leaderboard(empty_db):
         db.session.add_all(hours_list)
         db.session.commit()
 
-        accolade_alice = Accolade(student_id=tom.id, accolade_level="Silver")
-        accolade_alice.date_rewarded = datetime.today().date()
-        db.session.add(accolade_alice)
+        accolade_tom = Accolade(student_id=tom.id, accolade_level="Silver")
+        accolade_tom.date_rewarded = datetime.today().date()
+        db.session.add(accolade_tom)
         db.session.commit()
 
         leaderboard = get_leaderboard()
@@ -143,15 +143,15 @@ def test_get_leaderboard(empty_db):
 
 def test_review_hours(empty_db):
     with empty_db.application.app_context():
-        test_staff_member = Staff(first_name="Admin", last_name="User", password="admin123")
+        test_staff_member = Staff(first_name="Who", last_name="Where", password="admin123")
         db.session.add(test_staff_member)
         db.session.commit()
 
-        test_student = Student(first_name="Test", last_name="Student", password="testpass")
+        test_student = Student(first_name="What", last_name="Why", password="testpass")
         db.session.add(test_student)
         db.session.commit()
 
-        hours_request = HoursCompleted(student_id=test_student.id, hours=8, activity="Library Help", status="pending")
+        hours_request = HoursCompleted(student_id=test_student.id, hours=8, activity="Questioning Life", status="pending")
         db.session.add(hours_request)
         db.session.commit()
 
