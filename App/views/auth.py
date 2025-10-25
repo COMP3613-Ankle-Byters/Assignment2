@@ -37,12 +37,13 @@ def identify_page():
 @auth_views.route('/api/login', methods=['POST'])
 def login_api():
     data = request.json
-    token = login(data['first_name'], data['last_name'], data['password'])
+    token = login(data['id'], data['password'])
     if not token:
         return jsonify({'message': 'Bad name or password'}), 401
     response = jsonify(access_token=token)
     set_access_cookies(response, token)
     return response
+
 
 @auth_views.route('/api/logout', methods=['GET'])
 def logout_api():
