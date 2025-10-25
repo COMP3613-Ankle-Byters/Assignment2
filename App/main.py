@@ -1,7 +1,7 @@
 from flask import Flask
 from flask_cors import CORS
 from flask_uploads import UploadSet, configure_uploads, TEXT, DOCUMENTS, IMAGES
-from flask_jwt_extended import JWTManager  # ✅ Add this import
+from flask_jwt_extended import JWTManager
 
 from App.database import init_db
 from App.config import load_config
@@ -11,6 +11,8 @@ from App.views.index import index_views
 from App.views.student import student_views
 from App.views.staff import staff_views
 from App.views.leaderboard import leaderboard_views
+from App.models.student import Student
+from App.models.staff import Staff
 
 jwt = JWTManager()
 
@@ -33,7 +35,6 @@ def create_app(overrides={}):
 
     # Initialize JWT
     jwt.init_app(app)
-    # Initialize JWT
     @jwt.user_lookup_loader
     def user_lookup_callback(_jwt_header, jwt_data):
         identity = jwt_data.get("sub")
@@ -51,11 +52,6 @@ def create_app(overrides={}):
         if user_id is None:
             return None
 
-        # lazy import of your models
-        from App.models.student import Student
-        from App.models.staff import Staff
-
-        # if token indicates type, use it
         if user_type:
             t = user_type.lower()
             if t in ("student", "s"):
@@ -72,7 +68,6 @@ def create_app(overrides={}):
     # Register blueprints
     add_views(app)
 
-    # Optional: push app context
     app.app_context().push()
 
     return app

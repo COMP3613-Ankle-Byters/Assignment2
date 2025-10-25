@@ -57,11 +57,10 @@ def view_student_profile_web(student_id):
         return jsonify({'message': 'Invalid token identity'}), 401
         
 
-    # Check owner + role
     if token_user_id != student_id or claims.get('type') != 'student':
         return jsonify({'message': 'Unauthorized access'}), 403
 
-    profile = view_profile(student_id)   # note: view_profile() should not require password here
+    profile = view_profile(student_id)
     if not profile:
         return jsonify({'message': 'Profile not found'}), 404
     return jsonify(profile)

@@ -7,23 +7,28 @@ from functools import wraps
 
 def login(id, password):
     str_id = str(id)
-   
-    if str_id.startswith("816"):
-        suffix = str_id[3:]  # → "001"
+    user = None  # <-- initialize to avoid UnboundLocalError
+
+    if str_id.startswith("816"):  # student
+        suffix = str_id[3:]
         student_id = int(suffix)
         user = Student.query.get(student_id)
-    elif str_id.startswith("999"):
-        suffix = str_id[3:]  # → "001"
+    elif str_id.startswith("999"):  # staff
+        suffix = str_id[3:]
         staff_id = int(suffix)
         user = Staff.query.get(staff_id)
-    
+
+    # If user not found or password invalid
     if not user or not user.check_password(password):
-        return None
+        return None  # your login_api already returns a JSON message for this
+
+    role = "student" if isinstance(user, Student) else "staff"
     token = create_access_token(
-    identity=str(user.id),
-    additional_claims={"type": "student" if isinstance(user, Student) else "staff"}
+        identity=str(user.id),
+        additional_claims={"type": role}
     )
     return token
+
 
 
 def initialize():

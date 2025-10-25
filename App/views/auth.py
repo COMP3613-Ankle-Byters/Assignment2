@@ -30,7 +30,7 @@ def identify_page():
     return render_template(
         'message.html',
         title="Identify",
-        message=f"You are logged in as {current_user.id} - {current_user.username}"
+        message=f"You are logged in as {current_user.id} - {current_user.first_name}"
     )
 
 # API routes
@@ -55,9 +55,13 @@ def logout_api():
 @jwt_required()
 def identify_user_api():
     claims = get_jwt()
-    identity = get_jwt_identity()
-    return jsonify({
-        'name': current_user.first_name + current_user.last_name,
-        'id': current_user.id,
-        'type': claims.get('type')
-    })
+    user_type = claims.get('type')  # staff or student
+
+    if user_type == 'staff':
+        user_id = 999000 + current_user.id
+    else:  # student
+        return jsonify({
+            'name': f"{current_user.first_name} {current_user.last_name}",
+            'id': 816000 + current_user.id,
+            'role': user_type
+        })
